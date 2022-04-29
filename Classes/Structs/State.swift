@@ -58,6 +58,39 @@ open class State<Value>: Stateable {
             self.wrappedValue = expression(stateA.wrappedValue, stateB.wrappedValue)
         }
     }
+
+    init <A, B, C>(_ stateA: State<A>, _ stateB: State<B>, _ stateC: State<C>, _ expression: @escaping (A, B, C) -> Value) {
+        let value = expression(stateA.wrappedValue, stateB.wrappedValue, stateC.wrappedValue)
+        _originalValue = value
+        _wrappedValue = value
+        stateA.listen {
+            self.wrappedValue = expression(stateA.wrappedValue, stateB.wrappedValue, stateC.wrappedValue)
+        }
+        stateB.listen {
+            self.wrappedValue = expression(stateA.wrappedValue, stateB.wrappedValue, stateC.wrappedValue)
+        }
+        stateC.listen {
+            self.wrappedValue = expression(stateA.wrappedValue, stateB.wrappedValue, stateC.wrappedValue)
+        }
+    }
+
+    init <A, B, C, D>(_ stateA: State<A>, _ stateB: State<B>, _ stateC: State<C>, _ stateD: State<D>, _ expression: @escaping (A, B, C, D) -> Value) {
+        let value = expression(stateA.wrappedValue, stateB.wrappedValue, stateC.wrappedValue, stateD.wrappedValue)
+        _originalValue = value
+        _wrappedValue = value
+        stateA.listen {
+            self.wrappedValue = expression(stateA.wrappedValue, stateB.wrappedValue, stateC.wrappedValue, stateD.wrappedValue)
+        }
+        stateB.listen {
+            self.wrappedValue = expression(stateA.wrappedValue, stateB.wrappedValue, stateC.wrappedValue, stateD.wrappedValue)
+        }
+        stateC.listen {
+            self.wrappedValue = expression(stateA.wrappedValue, stateB.wrappedValue, stateC.wrappedValue, stateD.wrappedValue)
+        }
+        stateD.listen {
+            self.wrappedValue = expression(stateA.wrappedValue, stateB.wrappedValue, stateC.wrappedValue, stateD.wrappedValue)
+        }
+    }
     
     init <A, B>(_ stateA: State<A>, _ stateB: State<B>, _ expression: @escaping (CombinedDeprecatedResult<A, B>) -> Value) {
         let value = expression(.init(left: stateA.wrappedValue, right: stateB.wrappedValue))
@@ -163,6 +196,13 @@ open class State<Value>: Stateable {
     public func and<V>(_ state: State<V>) -> CombinedState<Value, V> {
         CombinedState(left: projectedValue, right: state)
     }
+    public func and<B, C>(_ stateB: State<B>, _ stateC: State<C>) -> CombinedThreeState<Value, B, C> {
+        CombinedThreeState(a: projectedValue, b: stateB, c: stateC)
+    }
+
+    public func and<B, C, D>(_ stateB: State<B>, _ stateC: State<C>, _ stateD: State<D>) -> CombinedFourState<Value, B, C, D> {
+        CombinedFourState(a: projectedValue, b: stateB, c: stateC, d: stateD)
+    }
 }
 
 public class CombinedState<A, B> {
@@ -187,6 +227,47 @@ public class CombinedState<A, B> {
     @available(*, deprecated, message: "🧨 This method will be removed soon. Please switch to `.map { left, right in }`.")
     public func map<Result>(_ expression: @escaping (CombinedDeprecatedResult<A, B>) -> Result) -> State<Result> {
         .init(_left, _right, expression)
+    }
+}
+
+public class CombinedThreeState<A, B, C> {
+    let _a: State<A>
+    let _b: State<B>
+    let _c: State<C>
+    public var a: A { _a.wrappedValue }
+    public var b: B { _b.wrappedValue }
+    public var c: C { _c.wrappedValue }
+
+    init (a: State<A>, b: State<B>, c: State<C>) {
+        self._a = a
+        self._b = b
+        self._c = c
+    }
+
+    public func map<Result>(_ expression: @escaping (A, B, C) -> Result) -> State<Result> {
+        .init(_a, _b, _c, expression)
+    }
+}
+
+public class CombinedFourState<A, B, C, D> {
+    let _a: State<A>
+    let _b: State<B>
+    let _c: State<C>
+    let _d: State<D>
+    public var a: A { _a.wrappedValue }
+    public var b: B { _b.wrappedValue }
+    public var c: C { _c.wrappedValue }
+    public var d: D { _d.wrappedValue }
+
+    init (a: State<A>, b: State<B>, c: State<C>, d: State<D>) {
+        self._a = a
+        self._b = b
+        self._c = c
+        self._d = d
+    }
+
+    public func map<Result>(_ expression: @escaping (A, B, C, D) -> Result) -> State<Result> {
+        .init(_a, _b, _c, _d, expression)
     }
 }
 
