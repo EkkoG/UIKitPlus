@@ -209,9 +209,13 @@ open class _StackView: _STV, AnyDeclarativeProtocol, DeclarativeProtocolInternal
                 nestedStackViews.append(WeakBox(stack))
                 fr.allItems().forEach {
                     #if os(macOS)
-                    stack.addArrangedSubview([$0].flatten(fr.orientation ?? orientation))
+                    let view = [$0].flatten(fr.orientation ?? orientation)
+                    self.nestedStackViews.append(WeakBox(view as! UStackView))
+                    stack.addArrangedSubview(view)
                     #else
-                    stack.addArrangedSubview([$0].flatten(fr.axis ?? axis))
+                    let view = [$0].flatten(fr.axis ?? self.axis)
+                    self.nestedStackViews.append(WeakBox(view as! UStackView))
+                    stack.addArrangedSubview(view)
                     #endif
                 }
                 addArrangedSubview(stack)
@@ -220,9 +224,13 @@ open class _StackView: _STV, AnyDeclarativeProtocol, DeclarativeProtocolInternal
                     stack.arrangedSubviews.removeFromSuperview(at: deletions)
                     insertions.forEach {
                         #if os(macOS)
-                        stack.add(arrangedView: [fr.items(at: $0)].flatten(fr.orientation ?? self.orientation), at: $0)
+                        let view = [fr.items(at: $0)].flatten(fr.orientation ?? self.orientation)
+                        self.nestedStackViews.append(WeakBox(view as! UStackView))
+                        stack.add(arrangedView: view, at: $0)
                         #else
-                        stack.add(arrangedView: [fr.items(at: $0)].flatten(fr.axis ?? self.axis), at: $0)
+                        let view = [fr.items(at: $0)].flatten(fr.axis ?? self.axis)
+                        self.nestedStackViews.append(WeakBox(view as! UStackView))
+                        stack.add(arrangedView: view, at: $0)
                         #endif
                     }
                 }) {}
